@@ -2,5 +2,5 @@ apiVersion: v2
 name: shift-roaster
 description: A Helm chart for the Shift Roaster Flask application
 type: application
-version: 0.1.0
-appVersion: "1.0.0"
+version: 0.1.1
+appVersion: "1.1.0"

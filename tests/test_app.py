@@ -36,6 +36,18 @@ def test_add_member(client, admin_user):
     assert b'MEM-999' in response.data
     assert b'new@example.com' in response.data
 
+def test_health_endpoint(client):
+    """Test the health check endpoint."""
+    response = client.get('/health')
+    assert response.status_code == 200
+    assert response.json == {"status": "healthy"}
+
+def test_metrics_endpoint(client):
+    """Test the metrics endpoint."""
+    response = client.get('/metrics')
+    assert response.status_code == 200
+    assert b'app_info' in response.data
+
 def test_edit_member(client, admin_user):
     """Test editing a member's profile fields."""
     client.post('/login', data={'username': 'admin', 'password': 'admin123'})
