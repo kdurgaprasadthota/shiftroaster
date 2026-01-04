@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift Roaster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="{{ request.endpoint }}-bg">
+  <nav class="navbar">
+    <a href="{{ url_for('roaster') }}" class="navbar-brand">
+      <img src="https://4.bp.blogspot.com/-PzLcyitTlMU/UzbSPF3YLPI/AAAAAAAAB3U/1DAxP2OZtAc/s1600/Logo+SAP.JPG"
+        alt="SAP Logo" class="brand-logo">
+      Shift Roaster
+    </a>
+
+    <div class="nav-links">
+      {% if current_user.is_authenticated %}
+      <span>Welcome, {{ current_user.username }}</span>
+      <a href="{{ url_for('roaster') }}">Roaster</a>
+      {% if current_user.role == 'Admin' %}
+      <a href="{{ url_for('team') }}">Team</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flash-messages">
+      {% for message in messages %}
+      <li class="flash-item">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
