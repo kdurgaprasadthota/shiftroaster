@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shift-roaster-shift-roaster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shift-roaster
+  template:
+    metadata:
+      labels:
+        app: shift-roaster
+    spec:
+      containers:
+        - name: shift-roaster
+          image: shift-roaster:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PGHOST
+              value: shift-roaster-shift-roaster-postgresql
+            - name: PGUSER
+              value: roaster_user
+            - name: PGPASSWORD
+              value: roaster_password
+            - name: PGDATABASE
+              value: shift_roaster
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi

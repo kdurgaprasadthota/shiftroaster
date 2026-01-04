@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+
+namePrefix: preview-
+
+commonLabels:
+  environment: preview
+
+patches:
+  - target:
+      kind: Deployment
+      name: shift-roaster-shift-roaster
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1

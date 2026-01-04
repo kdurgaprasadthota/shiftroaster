@@ -36,24 +36,39 @@ A modern, containerized Flask application for managing team shifts, featuring a 
    ```
    *Note: Defaults to SQLite for local development.*
 
-### Kubernetes Deployment (Helm)
+### Kubernetes Deployment (Kustomize)
 
-1. **Build & Push Image**:
+1. **Build & Push Image**: (Same as Helm)
+2. **Deploy Base**:
    ```bash
-   docker build -t <your-repo>/shift-roaster:latest .
-   docker push <your-repo>/shift-roaster:latest
+   kubectl apply -k k8s/base
    ```
-2. **Deploy Chart**:
+3. **Deploy Production Overlay**:
    ```bash
-   helm upgrade --install shift-roaster ./chart/shift-roaster
+   kubectl apply -k k8s/overlays/production
    ```
+4. **Deploy Preview Environment**:
+   ```bash
+   kubectl apply -k k8s/overlays/preview
+   ```
+5. **Deploy Post-Production Environment**:
+   ```bash
+   kubectl apply -k k8s/overlays/post_prod
+   ```
+
+### Unified Deployment (Helm + Kustomize + Argo CD)
+
+For professional GitOps workflows, use the **Combined Application** pattern:
+1. **Argo CD Combined**: Use [application-combined.yaml](file:///c:/Users/C5304531/Desktop/New%20folder1/argocd/application-combined.yaml).
+   - It pulls the base logic from the **Helm Chart**.
+   - It applies environment-specific overrides (replicas, labels) via **Kustomize Overlays**.
 
 ## 🛠 Tech Stack
 
 - **Backend**: Flask, SQLAlchemy, Flask-Login
 - **Database**: PostgreSQL (StatefulSet) / SQLite (Local)
 - **Monitoring**: Prometheus
-- **Deployment**: Helm, Kubernetes, GitHub Actions
+- **Deployment**: Helm, Kustomize, Kubernetes, GitHub Actions
 - **Security**: Trivy
 
 ---

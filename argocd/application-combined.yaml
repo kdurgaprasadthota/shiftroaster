@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shift-roaster-combined
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: 'https://github.com/your-username/your-repo.git'
+      targetRevision: HEAD
+      path: chart/shift-roaster
+      helm:
+        valueFiles:
+          - values.yaml
+    - repoURL: 'https://github.com/your-username/your-repo.git'
+      targetRevision: HEAD
+      path: k8s/overlays/production
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
