@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: shift-roaster
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "20260104-abc123d"
 
 service:
   type: ClusterIP

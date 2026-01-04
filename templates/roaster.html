@@ -52,7 +52,14 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td style="font-weight: 600;">{{ user.username }}</td>
+                    <td style="font-weight: 600;">
+                        {% if user.full_name %}
+                        {{ user.full_name }}
+                        <div style="font-size: 0.75rem; font-weight: normal; opacity: 0.8;">@{{ user.username }}</div>
+                        {% else %}
+                        {{ user.username }}
+                        {% endif %}
+                    </td>
                     {% for date in dates %}
                     <td class="shift-cell">
                         {% set shift = roaster_data[user.id][date] %}

@@ -144,16 +144,28 @@ def edit_member(user_id):
         return redirect(url_for('team'))
     
     user = User.query.get_or_404(user_id)
-    user.username = request.form.get('username')
-    user.role = request.form.get('role')
-    user.full_name = request.form.get('full_name')
-    user.member_id = request.form.get('member_id')
-    password = request.form.get('password')
-    if password:
-        user.password_hash = generate_password_hash(password)
+    username = request.form.get('username')
+    member_id = request.form.get('member_id')
     
-    db.session.commit()
-    flash('Member updated successfully')
+    # Check if new username/member_id already exists for other users
+    existing_user = User.query.filter(User.username == username, User.id != user_id).first()
+    existing_member = User.query.filter(User.member_id == member_id, User.id != user_id).first() if member_id else None
+    
+    if existing_user:
+        flash('Username already exists')
+    elif existing_member:
+        flash('Member ID already exists')
+    else:
+        user.username = username
+        user.role = request.form.get('role')
+        user.full_name = request.form.get('full_name')
+        user.member_id = member_id
+        password = request.form.get('password')
+        if password:
+            user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        flash('Member updated successfully')
+    
     return redirect(url_for('team'))
 
 @app.route('/delete_member/<int:user_id>', methods=['POST'])
