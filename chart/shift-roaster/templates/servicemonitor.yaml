@@ -1,0 +1,16 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "shift-roaster.fullname" . }}
+  labels:
+    {{- include "shift-roaster.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "shift-roaster.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: {{ .Values.monitoring.path }}
+      interval: {{ .Values.monitoring.interval }}
+{{- end }}

@@ -1,0 +1,215 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #6c757d;
+    --bg-color: #f4f7f6;
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --text-color: #333;
+    --border-radius: 12px;
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background 0.5s ease;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40%;
+    height: 40%;
+    background-image: url('https://4.bp.blogspot.com/-PzLcyitTlMU/UzbSPF3YLPI/AAAAAAAAB3U/1DAxP2OZtAc/s1600/Logo+SAP.JPG');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.05;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body.login-bg {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/login_bg.png');
+}
+
+body.roaster-bg,
+body.team-bg {
+    background-image: linear-gradient(rgba(224, 234, 252, 0.7), rgba(207, 222, 243, 0.7)), url('../images/dashboard_bg.png');
+}
+
+.navbar {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.brand-logo {
+    height: 30px;
+    width: auto;
+    border-radius: 4px;
+}
+
+
+.nav-links a {
+    margin-left: 1.5rem;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+.container {
+    padding: 2rem;
+    flex: 1;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #357abd;
+    transform: translateY(-2px);
+}
+
+.roaster-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.roaster-table th,
+.roaster-table td {
+    padding: 1rem;
+    text-align: center;
+}
+
+.roaster-table th {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.roaster-table td {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.shift-cell {
+    min-width: 100px;
+}
+
+.shift-tag {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: white;
+}
+
+.shift-Morning {
+    background-color: #f1c40f;
+}
+
+.shift-Afternoon {
+    background-color: #e67e22;
+}
+
+.shift-Night {
+    background-color: #34495e;
+}
+
+.shift-Off {
+    background-color: #bdc3c7;
+    color: #333;
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+.flash-messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.flash-item {
+    padding: 0.8rem;
+    border-radius: 8px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 0.5rem;
+}

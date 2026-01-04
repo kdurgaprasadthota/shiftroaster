@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
 requests==2.31.0
 Werkzeug==3.0.1
+=======
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+requests==2.31.0
+Werkzeug==3.0.1
+pytest
+flake8
+psycopg2-binary
+prometheus-flask-exporter
+>>>>>>> 9b634b7 (added code)
