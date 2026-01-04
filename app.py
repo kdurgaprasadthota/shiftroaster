@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -181,3 +182,232 @@ def init_db():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+=======
+from flask import Flask, render_template, redirect, url_for, request, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, Shift
+from datetime import datetime, timedelta
+import os
+from prometheus_flask_exporter import PrometheusMetrics
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'secret-key-goes-here')
+
+# Database configuration: PostgreSQL priority, then SQLite
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    pg_host = os.environ.get('PGHOST')
+    pg_user = os.environ.get('PGUSER')
+    pg_pass = os.environ.get('PGPASSWORD')
+    pg_db = os.environ.get('PGDATABASE')
+    if pg_host and pg_user and pg_pass and pg_db:
+        database_url = f"postgresql://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}"
+    else:
+        database_url = 'sqlite:///roaster.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+
+# Initialize monitoring
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.0')
+
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/')
+@login_required
+def index():
+    return redirect(url_for('roaster'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            return redirect(url_for('roaster'))
+        flash('Invalid username or password')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/health')
+def health():
+    return {"status": "healthy"}, 200
+
+@app.route('/roaster')
+@login_required
+def roaster():
+    # Get month and year from request or default to current
+    month = request.args.get('month', datetime.now().month, type=int)
+    year = request.args.get('year', datetime.now().year, type=int)
+    view_type = request.args.get('view', 'weekly') # 'weekly' or 'monthly'
+    
+    if view_type == 'monthly':
+        import calendar
+        # Get number of days in month
+        num_days = calendar.monthrange(year, month)[1]
+        dates = [datetime(year, month, day).date() for day in range(1, num_days + 1)]
+    else:
+        # Weekly view (default)
+        target_date = datetime.now().date()
+        # If a specific month/year is requested but view is weekly, start from first of that month
+        if 'month' in request.args or 'year' in request.args:
+            target_date = datetime(year, month, 1).date()
+            
+        start_of_week = target_date - timedelta(days=target_date.weekday())
+        dates = [start_of_week + timedelta(days=i) for i in range(7)]
+    
+    users = User.query.filter(User.role != 'Admin').all()
+    shifts = Shift.query.filter(Shift.shift_date >= dates[0], Shift.shift_date <= dates[-1]).all()
+    
+    # Organize shifts into a dictionary for easy access: {user_id: {date: shift_type}}
+    roaster_data = {user.id: {date: None for date in dates} for user in users}
+    for shift in shifts:
+        if shift.user_id in roaster_data and shift.shift_date in roaster_data[shift.user_id]:
+            roaster_data[shift.user_id][shift.shift_date] = shift.shift_type
+            
+    return render_template('roaster.html', dates=dates, users=users, roaster_data=roaster_data, 
+                           current_month=month, current_year=year, view_type=view_type, datetime=datetime)
+
+
+@app.route('/assign_shift', methods=['POST'])
+@login_required
+def assign_shift():
+    if current_user.role != 'Admin':
+        flash('Only admins can assign shifts')
+        return redirect(url_for('roaster'))
+    
+    user_id = request.form.get('user_id')
+    date_str = request.form.get('date')
+    shift_type = request.form.get('shift_type')
+    
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    
+    existing_shift = Shift.query.filter_by(user_id=user_id, shift_date=date_obj).first()
+    if existing_shift:
+        existing_shift.shift_type = shift_type
+    else:
+        new_shift = Shift(user_id=user_id, shift_date=date_obj, shift_type=shift_type)
+        db.session.add(new_shift)
+    
+    db.session.commit()
+    return redirect(url_for('roaster'))
+
+@app.route('/team')
+@login_required
+def team():
+    if current_user.role != 'Admin':
+        flash('Only admins can manage team')
+        return redirect(url_for('roaster'))
+    users = User.query.all()
+    return render_template('team.html', users=users)
+
+@app.route('/add_member', methods=['POST'])
+@login_required
+def add_member():
+    if current_user.role != 'Admin':
+        flash('Only admins can add members')
+        return redirect(url_for('team'))
+    
+    username = request.form.get('username')
+    password = request.form.get('password')
+    role = request.form.get('role', 'Member')
+    full_name = request.form.get('full_name')
+    member_id = request.form.get('member_id')
+    email = request.form.get('email')
+    
+    if User.query.filter_by(username=username).first():
+        flash('Username already exists')
+    elif member_id and User.query.filter_by(member_id=member_id).first():
+        flash('Member ID already exists')
+    else:
+        new_user = User(username=username, password_hash=generate_password_hash(password), 
+                        role=role, full_name=full_name, member_id=member_id, email=email)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Member added successfully')
+    
+    return redirect(url_for('team'))
+
+@app.route('/edit_member/<int:user_id>', methods=['POST'])
+
+@login_required
+def edit_member(user_id):
+    if current_user.role != 'Admin':
+        flash('Only admins can edit members')
+        return redirect(url_for('team'))
+    
+    user = User.query.get_or_404(user_id)
+    username = request.form.get('username')
+    member_id = request.form.get('member_id')
+    
+    # Check if new username/member_id already exists for other users
+    existing_user = User.query.filter(User.username == username, User.id != user_id).first()
+    existing_member = User.query.filter(User.member_id == member_id, User.id != user_id).first() if member_id else None
+    
+    if existing_user:
+        flash('Username already exists')
+    elif existing_member:
+        flash('Member ID already exists')
+    else:
+        user.username = username
+        user.role = request.form.get('role')
+        user.full_name = request.form.get('full_name')
+        user.member_id = member_id
+        user.email = request.form.get('email')
+        password = request.form.get('password')
+        if password:
+            user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        flash('Member updated successfully')
+    
+    return redirect(url_for('team'))
+
+@app.route('/delete_member/<int:user_id>', methods=['POST'])
+@login_required
+def delete_member(user_id):
+    if current_user.role != 'Admin':
+        flash('Only admins can delete members')
+        return redirect(url_for('team'))
+    
+    if user_id == current_user.id:
+        flash('You cannot delete yourself')
+        return redirect(url_for('team'))
+        
+    user = User.query.get_or_404(user_id)
+    # Delete associated shifts first
+    Shift.query.filter_by(user_id=user_id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    flash('Member and their shifts deleted successfully')
+    return redirect(url_for('team'))
+
+
+def init_db():
+    with app.app_context():
+        db.create_all()
+        # Create default admin if not exists
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', password_hash=generate_password_hash('admin123'), 
+                         role='Admin', full_name='System Admin', member_id='ADM-001')
+            db.session.add(admin)
+            db.session.commit()
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True)
+>>>>>>> 9b634b7 (added code)

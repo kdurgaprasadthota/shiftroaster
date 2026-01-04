@@ -1,0 +1,56 @@
+replicaCount: 1
+
+image:
+  repository: shift-roaster
+  pullPolicy: IfNotPresent
+  tag: "20260104-abc123d"
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: shift-roaster.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Persistence for the application (not needed if using external DB)
+persistence:
+  enabled: false
+
+# PostgreSQL Configuration (Internal StatefulSet)
+postgresql:
+  enabled: true
+  auth:
+    database: shift_roaster
+    username: roaster_user
+    password: roaster_password
+  storage:
+    size: 2Gi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  path: /metrics
+  interval: 30s

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 venv/
 __pycache__/
 *.pyc
@@ -8,3 +9,15 @@ __pycache__/
 .idea/
 instance/
 *.log
+=======
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.git/
+.vscode/
+.idea/
+instance/
+*.log
+>>>>>>> 9b634b7 (added code)
